@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block head %}
+    <script src="https://js.stripe.com/v3/"></script>
+{% endblock %}
+
+{% block body %}
+    <h1>{{ item.name }}</h1>
+    <br/>
+    <p>{{ item.description }}</p>
+    <p>{{ item.price }} {{ item.currency }}</p>
+    <br/>
+    <div id="card-element" class="MyCardElement" style="width: 400px;"></div>
+    <br/>
+    <br/>
+    <button id="payment-button" class="btn btn-primary">
+        Купить
+    </button>
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}
+<script>
+    var stripe = Stripe('{{ publishable_key }}');
+    var elements = stripe.elements();
+    var cardElement = elements.create("card");
+    cardElement.mount("#card-element");
+
+    var buyButton = document.getElementById('payment-button');
+    buyButton.addEventListener('click', function () {
+        fetch('/buy/{{ item.id }}', {method: "GET"})
+            .then(response => response.json())
+            .then(data => {
+                var client_secret = data.client_secret;
+                stripe.confirmCardPayment(client_secret, {
+                    payment_method: {
+                        card: cardElement,
+                    }
+                })
+                .then(function(result) {
+                    console.log(result);
+                    var currentHostname = window.location.hostname;
+                    var currentPort = window.location.port;
+                    if (result.paymentIntent.status === "succeeded") {
+                        var url = "http://" + currentHostname + ":" + currentPort + "/success";
+                    } else {
+                        var url = "http://" + currentHostname + ":" + currentPort + "/cancel";
+                    }
+                    window.location.replace(url);
+                });
+            });
+    });
+</script>

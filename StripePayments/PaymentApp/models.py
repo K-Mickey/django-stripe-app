@@ -1,3 +1,4 @@
+from django.core.validators import MinValueValidator
 from django.db import models
 
 
@@ -16,9 +17,10 @@ class Item(models.Model):
         verbose_name='Описание',
         blank=True,
     )
-    price = models.PositiveIntegerField(
+    price = models.FloatField(
         verbose_name='Цена',
-        default=0,
+        validators=[MinValueValidator(0.0)],
+        default=0.0,
     )
     currency = models.CharField(
         verbose_name='Валюта',
@@ -29,3 +31,7 @@ class Item(models.Model):
 
     def __str__(self):
         return f'{self.name} - {self.price} {self.currency}'
+
+    @property
+    def price_int(self):
+        return int(self.price * 100)
