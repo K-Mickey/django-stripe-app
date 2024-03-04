@@ -55,3 +55,54 @@ API метод для получения HTML c кнопкой на платеж
   </body>
 </html>
 ```
+
+## Установка
+
+Скачайте репозиторий
+
+```commandline
+git clone https://github.com/K-Mickey/django-stipe-app.git
+```
+Перейдите в директорию проекта
+
+```commandline
+cd django-stripe-app
+```
+Проверьте и при необходимости установите Python 3.10
+
+Создайте и активируйте виртуальное окружение
+```commandline
+python3 -m venv <name>
+source <name>/bin/active
+```
+Установите необходимые зависимости
+```commandline
+pip install -r requrements.txt
+```
+Перейдите в вложенную директорию
+```commandline
+cd StripePayments
+```
+Рядом с файлом manage.py создайте файл с переменными окружения .env и заполните его:
+```
+SECRET_KEY - Уникальный ключ Django,например: 'secret_key'
+DEBUG - Режим дебага с более подробной информацией при возникновении ошибок, True / False 
+ALLOWED_HOSTS - Разрешенные хосты, например: 'localhost', '127.0.01'
+STRIPE_SECRET_KEY - Секретный ключ Stripe
+STRIPE_PUBLISHABLE_KEY - Публичный ключ Stripe
+```
+### Запуск сервера разработки
+```commandline
+python3 manage.py migrate
+python3 manage.py createsuperuser
+python3 manage.py collectstatic
+python3 manage.py runserver
+```
+### Запуск проекта через Docker
+Вернитесь в основную директорию проекта и выполните следующие команды
+```commandline
+docker-compose up -d --build
+docker-compose exec web python manage.py migrate
+docker-compose exec web python manage.py createsuperuser
+docker-compose exec web python manage.py collectstatic --no-input
+```
