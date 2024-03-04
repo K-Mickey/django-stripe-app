@@ -8,6 +8,56 @@ class CurrencyType(models.TextChoices):
     EUR = 'EUR', 'Евро'
 
 
+class Order(models.Model):
+    items = models.ManyToManyField(
+        'Item',
+        verbose_name='Товары',
+        related_name='orders',
+    )
+    currency = models.CharField(
+        verbose_name='Валюта заказа',
+        max_length=3,
+        choices=CurrencyType.choices,
+        default=CurrencyType.USD,
+    )
+    discount = models.ForeignKey(
+        'Discount',
+        verbose_name='Скидка',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    tax = models.ForeignKey(
+        'Tax',
+        verbose_name='Налог',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+
+    def __str__(self):
+        return f'Заказ No {self.id}'
+
+    class Meta:
+        verbose_name = 'Заказ'
+        verbose_name_plural = 'Заказы'
+
+    @property
+    def price(self):
+        sum_items = sum(item.price for item in self.items.all())
+
+        if self.discount:
+            sum_items -= (sum_items * self.discount.percent) / 100
+        if self.tax:
+            sum_items += (sum_items * self.tax.percent) / 100
+
+        return round(sum_items, 2)
+
+    @property
+    def total_price(self):
+        return int(self.price * 100)
+
+
 class Item(models.Model):
     name = models.CharField(
         verbose_name='Наименование',
@@ -41,56 +91,6 @@ class Item(models.Model):
         return int(self.price * 100)
 
 
-class Order(models.Model):
-    items = models.ManyToManyField(
-        Item,
-        verbose_name='Товары',
-        related_name='orders',
-    )
-    currency = models.CharField(
-        verbose_name='Валюта заказа',
-        max_length=3,
-        choices=CurrencyType.choices,
-        default=CurrencyType.USD,
-    )
-    discount = models.ForeignKey(
-        'Discount',
-        verbose_name='Скидка',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-    )
-    tax = models.ForeignKey(
-        'Tax',
-        verbose_name='Налог',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-    )
-
-    def __str__(self):
-        return f'Заказ No{self.id}'
-
-    class Meta:
-        verbose_name = 'Заказ'
-        verbose_name_plural = 'Заказы'
-
-    @property
-    def price(self):
-        sum_items = sum(item.price for item in self.items.all())
-
-        if self.discount:
-            sum_items -= (sum_items * self.discount.percent) / 100
-        if self.tax:
-            sum_items += (sum_items * self.tax.percent) / 100
-
-        return round(sum_items, 2)
-
-    @property
-    def total_price(self):
-        return int(self.price * 100)
-
-
 class Discount(models.Model):
     name = models.CharField(
         verbose_name='Название скидки',
@@ -103,7 +103,7 @@ class Discount(models.Model):
     )
 
     def __str__(self):
-        return self.name
+        return f'{self.name} - {self.percent}%'
 
     class Meta:
         verbose_name = 'Скидка'
@@ -121,7 +121,7 @@ class Tax(models.Model):
     )
 
     def __str__(self):
-        return self.name
+        return f'{self.name} - {self.percent}%'
 
     class Meta:
         verbose_name = 'Налог'
