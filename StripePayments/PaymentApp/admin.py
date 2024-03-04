@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Item, Order
+from .models import Item, Order, Discount, Tax
 
 
 @admin.register(Item)
@@ -22,3 +22,7 @@ class OrderAdmin(admin.ModelAdmin):
     inlines = (
         OrderItemInline,
     )
+
+
+admin.site.register(Discount)
+admin.site.register(Tax)

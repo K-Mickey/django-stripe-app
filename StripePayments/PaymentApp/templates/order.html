@@ -15,6 +15,20 @@
                 <td>{{ item.price }} {{ item.currency }}</td>
             </tr>
         {% endfor %}
+        {% if order.discount %}
+            <tr>
+                <td>Скидка</td>
+                <td>{{ order.discount.name }}</td>
+                <td>{{ order.discount.percent }}%</td>
+            </tr>
+        {% endif %}
+        {% if order.tax %}
+            <tr>
+                <td>Налог</td>
+                <td>{{ order.tax.name }}</td>
+                <td>{{ order.tax.percent }}%</td>
+            </tr>
+        {% endif %}
         <tr>
             <td>Итого</td>
             <td></td>
