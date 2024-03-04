@@ -2,8 +2,32 @@ from django.conf import settings
 from django.http import JsonResponse
 from django.views.generic import DetailView, TemplateView
 
-from .models import Item
-from .services import item_service
+from .models import Item, Order
+from .services import get_instance
+
+
+class OrderView(DetailView):
+    model = Order
+    pk_url_kwarg = 'order_id'
+    context_object_name = 'order'
+    template_name = 'order.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['publishable_key'] = settings.STRIPE_PUBLISHABLE_KEY
+        return context
+
+
+class OrderBuyIdView(DetailView):
+    model = Order
+    pk_url_kwarg = 'order_id'
+
+    def get(self, request, *args, **kwargs):
+        order = self.get_object()
+        intent = get_instance(order)
+        return JsonResponse({
+            'client_secret': intent.client_secret,
+        })
 
 
 class ItemView(DetailView):
@@ -24,7 +48,7 @@ class ItemBuyIdView(DetailView):
 
     def get(self, request, *args, **kwargs):
         item = self.get_object()
-        intent = item_service.get_instance(item)
+        intent = get_instance(item)
         return JsonResponse({
             'client_secret': intent.client_secret,
         })

@@ -1,6 +1,24 @@
 from django.contrib import admin
 
-from .models import Item
+from .models import Item, Order
 
 
-admin.site.register(Item)
+@admin.register(Item)
+class ItemAdmin(admin.ModelAdmin):
+    list_display = (
+        'name',
+        'price',
+        'currency',
+    )
+
+
+class OrderItemInline(admin.TabularInline):
+    model = Order.items.through
+    extra = 0
+
+
+@admin.register(Order)
+class OrderAdmin(admin.ModelAdmin):
+    inlines = (
+        OrderItemInline,
+    )
